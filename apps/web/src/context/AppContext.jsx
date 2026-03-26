@@ -2,7 +2,8 @@ import { createContext, useCallback, useEffect, useMemo, useState } from 'react'
 
 export const AppContext = createContext(null);
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
+const API_BASE =
+  import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export const AppProvider = ({ children }) => {
   const [user, setUser] = useState(null);

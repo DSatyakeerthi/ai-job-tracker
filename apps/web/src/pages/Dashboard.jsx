@@ -162,88 +162,82 @@ export default function Dashboard() {
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    if (!user) return;
+  if (!user) return;
 
-    const loadJobs = async () => {
-      setLoading(true);
+  const loadJobs = async () => {
+    setLoading(true);
+    setError('');
+    setInfoMessage('');
+
+    try {
+      const query = new URLSearchParams();
+
+      if (resume?.id) {
+        query.set('resumeId', resume.id);
+      }
+
+      const url = query.toString()
+        ? `${API_BASE}/api/jobs?${query.toString()}`
+        : `${API_BASE}/api/jobs`;
+
+      const response = await fetch(url);
+      const text = await response.text();
+      const data = text ? JSON.parse(text) : {};
+
+      if (!response.ok) {
+        const fallback = FALLBACK_JOBS.map(normalizeJob);
+        setJobs(fallback);
+        setError('');
+        setInfoMessage('Showing fallback jobs.');
+        return;
+      }
+
+      if (data.success && Array.isArray(data.jobs)) {
+        const normalizedJobs = data.jobs.map(normalizeJob);
+        setJobs(normalizedJobs);
+        setError('');
+        setInfoMessage(data.source === 'mock' ? 'Showing fallback jobs.' : '');
+        return;
+      }
+
+      const fallback = FALLBACK_JOBS.map(normalizeJob);
+      setJobs(fallback);
       setError('');
-      setInfoMessage('');
+      setInfoMessage('Showing fallback jobs.');
+    } catch (err) {
+      console.error('Fetch jobs error:', err);
+      const fallback = FALLBACK_JOBS.map(normalizeJob);
+      setJobs(fallback);
+      setError('');
+      setInfoMessage('Showing fallback jobs.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      try {
-        const query = new URLSearchParams();
-        if (resume?.id) {
-          query.set('resumeId', resume.id);
-        }
+  loadJobs();
 
-        const searchParts = [];
-        if (safeFilters.role) searchParts.push(safeFilters.role);
-        if (safeFilters.location) searchParts.push(safeFilters.location);
-        const combinedSearch = searchParts.join(' ').trim();
-        if (combinedSearch) {
-          query.set('search', combinedSearch);
-        }
-
-        const url = query.toString()
-          ? `${API_BASE}/api/jobs?${query.toString()}`
-          : `${API_BASE}/api/jobs`;
-
-        const response = await fetch(url);
-        const text = await response.text();
-        const data = text ? JSON.parse(text) : {};
-
-        if (!response.ok) {
-          const fallback = FALLBACK_JOBS.map(normalizeJob);
-          setJobs(fallback);
-          setError('');
-          setInfoMessage('Showing fallback jobs.');
-          return;
-        }
-
-        if (data.success && Array.isArray(data.jobs)) {
-          const normalizedJobs = data.jobs.map(normalizeJob);
-          setJobs(normalizedJobs);
-          setError('');
-          setInfoMessage(data.source === 'mock' ? 'Showing fallback jobs.' : '');
-          return;
-        }
-
-        const fallback = FALLBACK_JOBS.map(normalizeJob);
-        setJobs(fallback);
-        setError('');
-        setInfoMessage('Showing fallback jobs.');
-      } catch (err) {
-        console.error('Fetch jobs error:', err);
-        const fallback = FALLBACK_JOBS.map(normalizeJob);
-        setJobs(fallback);
-        setError('');
-        setInfoMessage('Showing fallback jobs.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadJobs();
-
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        const pending = localStorage.getItem('pendingApplication');
-        if (pending) {
-          try {
-            const app = JSON.parse(pending);
-            setPendingApplication(app);
-            setShowApplicationModal(true);
-          } catch (err) {
-            console.error('Error parsing pending application:', err);
-          }
+  const handleVisibilityChange = () => {
+    if (!document.hidden) {
+      const pending = localStorage.getItem('pendingApplication');
+      if (pending) {
+        try {
+          const app = JSON.parse(pending);
+          setPendingApplication(app);
+          setShowApplicationModal(true);
+        } catch (err) {
+          console.error('Error parsing pending application:', err);
         }
       }
-    };
+    }
+  };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [user, resume?.id]);
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+
+  return () => {
+    document.removeEventListener('visibilitychange', handleVisibilityChange);
+  };
+}, [user, resume?.id]);
 
   const handleLogout = () => {
     if (logout) logout();

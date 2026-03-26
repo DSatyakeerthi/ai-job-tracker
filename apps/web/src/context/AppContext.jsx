@@ -1,19 +1,20 @@
-import { createContext, useState, useCallback, useEffect } from 'react';
+import { createContext, useCallback, useEffect, useMemo, useState } from 'react';
 
-export const AppContext = createContext();
+export const AppContext = createContext(null);
 
-export function AppProvider({ children }) {
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
+export const AppProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [isAuthenticating, setIsAuthenticating] = useState(true);
   const [resume, setResume] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [applications, setApplications] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [contextError, setContextError] = useState('');
 
-  // Check localStorage for saved user on mount
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
-    if (savedUser) {
+
+    if (savedUser && savedUser !== 'undefined') {
       try {
         setUser(JSON.parse(savedUser));
       } catch (err) {
@@ -21,86 +22,23 @@ export function AppProvider({ children }) {
         localStorage.removeItem('user');
       }
     }
-    setIsAuthenticating(false);
-  }, []);
-
-  // Chat and filters state
-  const [filters, setFilters] = useState({
-    role: '',
-    skills: [],
-    datePosted: '',
-    jobType: '',
-    workMode: '',
-    location: '',
-    matchScore: '',
-  });
-  const [chatHistory, setChatHistory] = useState([]);
-
-  const updateFilters = useCallback((newFilters) => {
-    setFilters(prev => ({ ...prev, ...newFilters }));
-  }, []);
-
-  const addChatMessage = useCallback((message) => {
-    setChatHistory(prev => [...prev, message]);
-  }, []);
-
-  const safeJson = (text) => {
-    if (!text) return {};
-    try {
-      return JSON.parse(text);
-    } catch (parseError) {
-      console.warn('safeJson parse error:', parseError, 'text:', text);
-      return {};
-    }
-  };
-
-  const login = useCallback(async (email, password) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-      const text = await response.text();
-      let data = {};
-      try {
-        data = text ? JSON.parse(text) : {};
-      } catch (e) {
-        throw new Error('Invalid server response');
-      }
-      if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
-      }
-      setUser(data.user);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      return data.user;
-    } catch (err) {
-      setError(err.message);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
   }, []);
 
   const fetchResume = useCallback(async () => {
     try {
-      const response = await fetch('/api/resume');
-      const text = await response.text();
-      const data = safeJson(text);
+      const response = await fetch(`${API_BASE}/api/resume`);
 
       if (!response.ok) {
-        setResume(null);
-        return null;
+        if (response.status === 404) {
+          setResume(null);
+          return null;
+        }
+        throw new Error('Failed to fetch resume');
       }
 
-      const nextResume =
-        data?.resume ??
-        (Array.isArray(data?.resumes) && data.resumes.length > 0 ? data.resumes[0] : null);
-
-      setResume(nextResume);
-      return nextResume;
+      const data = await response.json();
+      setResume(data);
+      return data;
     } catch (err) {
       console.error('Error fetching resume:', err);
       setResume(null);
@@ -110,17 +48,16 @@ export function AppProvider({ children }) {
 
   const fetchApplications = useCallback(async () => {
     try {
-      const response = await fetch('/api/applications');
-      const text = await response.text();
-      const data = text ? JSON.parse(text) : {};
+      const response = await fetch(`${API_BASE}/api/applications`);
 
       if (!response.ok) {
-        setApplications([]);
-        return [];
+        throw new Error('Failed to fetch applications');
       }
 
-      setApplications(data?.applications || []);
-      return data?.applications || [];
+      const data = await response.json();
+      const apps = Array.isArray(data) ? data : data.applications || [];
+      setApplications(apps);
+      return apps;
     } catch (err) {
       console.error('Error fetching applications:', err);
       setApplications([]);
@@ -128,80 +65,123 @@ export function AppProvider({ children }) {
     }
   }, []);
 
+  const login = useCallback(async (email, password) => {
+    try {
+      setIsLoading(true);
+      setContextError('');
+
+      const response = await fetch(`${API_BASE}/api/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      const loggedInUser = data.user || { email };
+      setUser(loggedInUser);
+      localStorage.setItem('user', JSON.stringify(loggedInUser));
+
+      await Promise.all([fetchResume(), fetchApplications()]);
+
+      return loggedInUser;
+    } catch (err) {
+      console.error('Login error:', err);
+      setContextError(err.message || 'Login failed');
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [fetchApplications, fetchResume]);
+
+  const logout = useCallback(() => {
+    setUser(null);
+    setResume(null);
+    setApplications([]);
+    setContextError('');
+    localStorage.removeItem('user');
+  }, []);
+
   const uploadResume = useCallback(async (file) => {
-  setIsLoading(true);
-  setError(null);
+    try {
+      setIsLoading(true);
+      setContextError('');
 
-  try {
-    const formData = new FormData();
-    formData.append('file', file);
+      const formData = new FormData();
+      formData.append('resume', file);
 
-    const response = await fetch('/api/resume/upload', {
-      method: 'POST',
-      body: formData,
-    });
+      const response = await fetch(`${API_BASE}/api/resume/upload`, {
+        method: 'POST',
+        body: formData,
+      });
 
-    const text = await response.text();
-    const data = safeJson(text);
+      const data = await response.json();
 
-    if (!response.ok || !data.success) {
-      throw new Error(data.message || data.error || 'Upload failed');
+      if (!response.ok) {
+        throw new Error(data.message || 'Resume upload failed');
+      }
+
+      setResume(data);
+      return data;
+    } catch (err) {
+      console.error('Resume upload error:', err);
+      setContextError(err.message || 'Resume upload failed');
+      throw err;
+    } finally {
+      setIsLoading(false);
     }
+  }, []);
 
-    if (data.resume) {
-      setResume(data.resume);
-    } else if (fetchResume) {
-      await fetchResume();
+  const refreshData = useCallback(async () => {
+    await Promise.all([fetchResume(), fetchApplications()]);
+  }, [fetchApplications, fetchResume]);
+
+  useEffect(() => {
+    if (user) {
+      refreshData();
     }
+  }, [user, refreshData]);
 
-    return data.resume;
-  } catch (err) {
-    setError(err.message);
-    throw err;
-  } finally {
-    setIsLoading(false);
-  }
-}, [fetchResume]);
-
-
-const logout = useCallback(() => {
-  setUser(null);
-  localStorage.removeItem('user');
-  setResume(null);
-  setFilters({
-    role: '',
-    skills: [],
-    datePosted: '',
-    jobType: '',
-    workMode: '',
-    location: '',
-    matchScore: '',
-  });
-  setChatHistory([]);
-}, []);
-
+  const value = useMemo(
+    () => ({
+      user,
+      resume,
+      applications,
+      isLoading,
+      error: contextError,
+      login,
+      logout,
+      uploadResume,
+      fetchResume,
+      fetchApplications,
+      refreshData,
+      setApplications,
+      setResume,
+    }),
+    [
+      user,
+      resume,
+      applications,
+      isLoading,
+      contextError,
+      login,
+      logout,
+      uploadResume,
+      fetchResume,
+      fetchApplications,
+      refreshData,
+    ]
+  );
 
   return (
-    <AppContext.Provider
-      value={{
-        user,
-        isAuthenticating,
-        resume,
-        applications,
-        isLoading,
-        error,
-        login,
-        logout,
-        fetchResume,
-        fetchApplications,
-        uploadResume,
-        filters,
-        updateFilters,
-        chatHistory,
-        addChatMessage,
-      }}
-    >
+    <AppContext.Provider value={value}>
       {children}
     </AppContext.Provider>
   );
-}
+};

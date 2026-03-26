@@ -2,6 +2,8 @@ import { useState, useEffect, useContext, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
 const DATE_OPTIONS = [
   { value: '', label: 'Any time' },
   { value: '1', label: 'Last 24 hours' },
@@ -180,7 +182,10 @@ export default function Dashboard() {
           query.set('search', combinedSearch);
         }
 
-        const url = query.toString() ? `/api/jobs?${query.toString()}` : '/api/jobs';
+        const url = query.toString()
+          ? `${API_BASE}/api/jobs?${query.toString()}`
+          : `${API_BASE}/api/jobs`;
+
         const response = await fetch(url);
         const text = await response.text();
         const data = text ? JSON.parse(text) : {};
@@ -285,7 +290,7 @@ export default function Dashboard() {
           ],
         };
 
-        const res = await fetch('/api/applications', {
+        const res = await fetch(`${API_BASE}/api/applications`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(applicationData),

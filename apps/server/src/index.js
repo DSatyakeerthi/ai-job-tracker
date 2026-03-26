@@ -33,6 +33,14 @@ fastify.get('/health', async (request, reply) => {
   return { status: 'ok', timestamp: new Date().toISOString() };
 });
 
+fastify.get('/', async () => {
+  return { message: 'Backend running successfully' };
+});
+
+fastify.get('/api/health', async () => {
+  return { ok: true };
+});
+
 // Register API routes with /api prefix
 await fastify.register(loginRoute, { prefix: '/api' });
 await fastify.register(resumeRoutes, { prefix: '/api' });

@@ -2,7 +2,8 @@ import { useState, useEffect, useContext, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
+const API_BASE =
+  import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 const DATE_OPTIONS = [
   { value: '', label: 'Any time' },
@@ -242,7 +243,7 @@ export default function Dashboard() {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [user, resume, filters]);
+  }, [user, resume, safeFilters]);
 
   const handleLogout = () => {
     if (logout) logout();
@@ -369,12 +370,30 @@ export default function Dashboard() {
     const selectedSkills = safeFilters.skills || [];
 
     if (role) {
-      const roleValue = role.toLowerCase();
-      const inTitle = job.title?.toLowerCase().includes(roleValue);
-      const inDescription = job.description?.toLowerCase().includes(roleValue);
-      const inCompany = job.company?.toLowerCase().includes(roleValue);
-      if (!inTitle && !inDescription && !inCompany) return false;
-    }
+    const roleValue = role.toLowerCase().trim();
+
+    const aliases = {
+    'software engineer': ['engineer', 'developer', 'software', 'full stack', 'backend', 'frontend'],
+    'frontend developer': ['frontend', 'react', 'ui'],
+    'backend developer': ['backend', 'api', 'node', 'server'],
+    'full stack': ['full stack', 'frontend', 'backend', 'react', 'node'],
+    };
+
+    const terms = aliases[roleValue] || roleValue.split(/\s+/);
+
+    const searchableText = [
+      job.title || '',
+      job.description || '',
+      job.company || '',
+      ...(job.skills || []),
+  ]
+    .join(' ')
+    .toLowerCase();
+
+    const hasMatch = terms.some((term) => searchableText.includes(term.toLowerCase()));
+
+    if (!hasMatch) return false;
+  }
 
     if (location) {
       const locationValue = location.toLowerCase();

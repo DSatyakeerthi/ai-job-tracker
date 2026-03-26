@@ -11,6 +11,15 @@ export const AppProvider = ({ children }) => {
   const [applications, setApplications] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [contextError, setContextError] = useState('');
+  const [filters, setFilters] = useState({
+    role: '',
+    location: '',
+    datePosted: '',
+    jobType: '',
+    workMode: '',
+    matchScore: '',
+    skills: [],
+  });
 
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
@@ -66,6 +75,13 @@ export const AppProvider = ({ children }) => {
     }
   }, []);
 
+  const updateFilters = useCallback((newFilters) => {
+    setFilters((prev) => ({
+      ...prev,
+      ...newFilters,
+    }));
+  }, []);
+
   const login = useCallback(async (email, password) => {
     try {
       setIsLoading(true);
@@ -106,6 +122,15 @@ export const AppProvider = ({ children }) => {
     setResume(null);
     setApplications([]);
     setContextError('');
+    setFilters({
+      role: '',
+      location: '',
+      datePosted: '',
+      jobType: '',
+      workMode: '',
+      matchScore: '',
+      skills: [],
+    });
     localStorage.removeItem('user');
   }, []);
 
@@ -156,6 +181,8 @@ export const AppProvider = ({ children }) => {
       applications,
       isLoading,
       error: contextError,
+      filters,
+      updateFilters,
       login,
       logout,
       uploadResume,
@@ -171,6 +198,8 @@ export const AppProvider = ({ children }) => {
       applications,
       isLoading,
       contextError,
+      filters,
+      updateFilters,
       login,
       logout,
       uploadResume,

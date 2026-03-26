@@ -243,7 +243,7 @@ export default function Dashboard() {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [user, resume, safeFilters]);
+  }, [user, resume?.id]);
 
   const handleLogout = () => {
     if (logout) logout();

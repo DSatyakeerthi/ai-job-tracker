@@ -31,12 +31,12 @@ export async function jobsRoutes(fastify) {
       const data = await response.json();
 
       if (!response.ok) {
-        return reply.send({
-          success: false,
-          message: data?.description || 'Failed to fetch jobs',
-          jobs: [],
-        });
-      }
+      return reply.code(response.status).send({
+      success: false,
+      message: data?.description || data?.message || 'Failed to fetch jobs',
+      jobs: [],
+    });
+  }
 
       const jobs = (data.results || []).map((job) => ({
         id: job.id,
@@ -57,7 +57,7 @@ export async function jobsRoutes(fastify) {
       console.error('Jobs error:', err);
       return reply.send({
         success: false,
-        message: 'Server error',
+        message: err.message || 'Server error',
         jobs: [],
       });
     }

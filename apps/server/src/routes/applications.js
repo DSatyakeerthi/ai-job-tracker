@@ -1,18 +1,13 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { v4 as uuidv4 } from 'uuid';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = path.join(__dirname, '../../data');
 const APPLICATIONS_FILE = path.join(DATA_DIR, 'applications.json');
 
 async function ensureDataDir() {
-  try {
-    await fs.mkdir(DATA_DIR, { recursive: true });
-  } catch (err) {
-    console.error('Error creating data directory:', err);
-  }
+  await fs.mkdir(DATA_DIR, { recursive: true });
 }
 
 async function loadApplications() {
@@ -20,63 +15,36 @@ async function loadApplications() {
     await ensureDataDir();
     const data = await fs.readFile(APPLICATIONS_FILE, 'utf-8');
     return JSON.parse(data);
-  } catch (err) {
+  } catch {
     return [];
   }
 }
 
 async function saveApplications(applications) {
-  try {
-    await ensureDataDir();
-    await fs.writeFile(APPLICATIONS_FILE, JSON.stringify(applications, null, 2), 'utf-8');
-  } catch (err) {
-    console.error('Error saving applications:', err);
-    throw err;
-  }
+  await ensureDataDir();
+  await fs.writeFile(
+    APPLICATIONS_FILE,
+    JSON.stringify(applications, null, 2),
+    'utf-8'
+  );
 }
 
-export async function applicationsRoutes(fastify, options) {
-  // Get all applications
-  fastify.get('/applications', async (request, reply) => {
-    try {
-      const applications = await loadApplications();
-      return reply.code(200).send({
-        success: true,
-        applications: applications,
-      });
-    } catch (error) {
-      return reply.code(500).send({
-        success: false,
-        message: 'Error fetching applications',
-      });
-    }
+export async function applicationsRoutes(fastify) {
+  fastify.get('/applications', async () => {
+    const applications = await loadApplications();
+    return { success: true, applications };
   });
 
-  // Create new application
   fastify.post('/applications', async (request, reply) => {
     try {
-      const { jobId, jobTitle, company, applyUrl, status, appliedAt, timeline } = request.body;
-
-      if (!jobId || !jobTitle || !company) {
-        return reply.code(400).send({
-          success: false,
-          message: 'Missing required fields: jobId, jobTitle, company',
-        });
-      }
-
       const applications = await loadApplications();
       const newApplication = {
-        id: uuidv4(),
-        jobId,
-        jobTitle,
-        company,
-        applyUrl: applyUrl || '',
-        status: status || 'Applied',
-        appliedAt: appliedAt || new Date().toISOString(),
-        timeline: timeline || [{ event: 'Applied', timestamp: new Date().toISOString() }],
+        id: Date.now().toString(),
+        ...request.body,
+        createdAt: new Date().toISOString(),
       };
 
-      applications.push(newApplication);
+      applications.unshift(newApplication);
       await saveApplications(applications);
 
       return reply.code(201).send({
@@ -86,50 +54,7 @@ export async function applicationsRoutes(fastify, options) {
     } catch (error) {
       return reply.code(500).send({
         success: false,
-        message: 'Error creating application',
-      });
-    }
-  });
-
-  // Update application status
-  fastify.patch('/applications/:id/status', async (request, reply) => {
-    try {
-      const { id } = request.params;
-      const { status } = request.body;
-
-      if (!status) {
-        return reply.code(400).send({
-          success: false,
-          message: 'Status is required',
-        });
-      }
-
-      const applications = await loadApplications();
-      const application = applications.find((app) => app.id === id);
-
-      if (!application) {
-        return reply.code(404).send({
-          success: false,
-          message: 'Application not found',
-        });
-      }
-
-      application.status = status;
-      application.timeline.push({
-        event: `Status updated to ${status}`,
-        timestamp: new Date().toISOString(),
-      });
-
-      await saveApplications(applications);
-
-      return reply.code(200).send({
-        success: true,
-        application: application,
-      });
-    } catch (error) {
-      return reply.code(500).send({
-        success: false,
-        message: 'Error updating application status',
+        message: 'Failed to save application',
       });
     }
   });

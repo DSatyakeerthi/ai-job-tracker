@@ -3,12 +3,12 @@
   "version": "1.0.0",
   "description": "Job Tracker API Server",
   "type": "module",
-  "main": "dist/index.js",
+  "main": "src/index.js",
   "scripts": {
     "dev": "node  --watch src/index.js",
-    "build": "echo 'No build step needed for Node.js'",
+    "build": "echo \"No build step needed for Node.js\"",
     "start": "node src/index.js",
-    "lint": "echo 'Linting disabled'"
+    "lint": "echo \"Linting disabled\""
   },
   "dependencies": {
     "@fastify/cors": "^8.4.2",

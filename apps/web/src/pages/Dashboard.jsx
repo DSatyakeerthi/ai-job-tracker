@@ -122,14 +122,20 @@ export default function Dashboard() {
     const data = await response.json();
 
     if (!response.ok || !data.success) {
-      setJobs([]);
-      setError('Failed to load live jobs.');
-      setInfoMessage('');
-      return;
-    }
+  setJobs([]);
+  setError(data.message || 'Failed to load live jobs.');
+  setInfoMessage('');
+  return;
+}
 
-    setJobs(data.jobs || []);
-    setInfoMessage('');
+setJobs(data.jobs || []);
+
+  if (data.source === 'mock') {
+  setInfoMessage('Showing fallback jobs. Live jobs are not available right now.');
+  } else {
+  setInfoMessage('Showing live jobs.');
+  }
+  
   } catch (err) {
     console.error('Fetch jobs error:', err);
     setJobs([]);

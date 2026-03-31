@@ -1,9 +1,9 @@
-import 'dotenv/config';
 
+import dotenv from 'dotenv';
+dotenv.config();
 console.log("ADZUNA_APP_ID:", process.env.ADZUNA_APP_ID);
 console.log("ADZUNA_APP_KEY exists:", !!process.env.ADZUNA_APP_KEY);
 console.log("ADZUNA_COUNTRY:", process.env.ADZUNA_COUNTRY);
-
 console.log('KEY LOADED:', !!process.env.OPENAI_API_KEY);
 
 import Fastify from 'fastify';

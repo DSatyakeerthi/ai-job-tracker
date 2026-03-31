@@ -2,6 +2,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import crypto from 'crypto';
+import { request } from 'http';
 
 // Mock jobs data
 const mockJobs = [
@@ -329,7 +330,89 @@ async function getMatchForJob(job, resume) {
   return result;
 }
 
-export async function jobsRoutes(fastify, options) {
+export async function jobsRoutes(fastify) {
+  fastify.get('/jobs', async (request, reply) => {
+    try {
+      const {
+        search = '',
+        location = '',
+        page = 1,
+      } = request.query;
+
+      console.log('Incoming query:', { search, location, page });
+
+      const APP_ID = process.env.ADZUNA_APP_ID;
+      const APP_KEY = process.env.ADZUNA_APP_KEY;
+      const COUNTRY = process.env.ADZUNA_COUNTRY || 'us';
+
+      console.log('Keys present:', {
+        hasAppId: !!APP_ID,
+        hasAppKey: !!APP_KEY,
+        country: COUNTRY,
+      });
+
+      if (!APP_ID || !APP_KEY) {
+        return reply.send({
+          success: false,
+          message: 'Missing Adzuna API keys',
+          jobs: [],
+        });
+      }
+
+      const queryParams = new URLSearchParams({
+        app_id: APP_ID,
+        app_key: APP_KEY,
+        results_per_page: '20',
+        what: search,
+        where: location,
+        content_type: 'application/json',
+      });
+
+      const url = `https://api.adzuna.com/v1/api/jobs/${COUNTRY}/search/${page}?${queryParams.toString()}`;
+
+      console.log('Adzuna URL:', url);
+
+      const response = await fetch(url);
+      const data = await response.json();
+
+      console.log('Adzuna status:', response.status);
+      console.log('Adzuna results count:', data?.results?.length || 0);
+      console.log('Adzuna raw response:', data);
+
+      if (!response.ok) {
+        return reply.send({
+          success: false,
+          message: data?.description || 'Failed to fetch jobs',
+          jobs: [],
+        });
+      }
+
+      const jobs = (data.results || []).map((job) => ({
+        id: job.id,
+        title: job.title,
+        company: job.company?.display_name || 'Unknown',
+        location: job.location?.display_name || 'Unknown',
+        description: job.description,
+        salary_min: job.salary_min,
+        salary_max: job.salary_max,
+        redirect_url: job.redirect_url,
+        created: job.created,
+      }));
+
+      return reply.send({
+        success: true,
+        jobs,
+      });
+    } catch (err) {
+      console.error('Jobs error:', err);
+      return reply.send({
+        success: false,
+        message: 'Server error',
+        jobs: [],
+      });
+    }
+  });
+}
   // Shared handler for all job list endpoints
 
   const handleGetJobs = async (request, reply) => {
@@ -454,4 +537,3 @@ export async function jobsRoutes(fastify, options) {
       jobs: results,
     };
   });
-}

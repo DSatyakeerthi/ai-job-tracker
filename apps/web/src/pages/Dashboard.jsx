@@ -2,8 +2,7 @@ import { useState, useEffect, useContext, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
 
-const API_BASE =
-  import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
 
 const DATE_OPTIONS = [
   { value: '', label: 'Any time' },
@@ -36,73 +35,6 @@ const MATCH_SCORE_OPTIONS = [
 
 const SKILLS_OPTIONS = ['React', 'Node.js', 'Python', 'TypeScript', 'AWS', 'SQL'];
 
-const FALLBACK_JOBS = [
-  {
-    id: '1',
-    title: 'Senior Frontend Developer',
-    company: 'Tech Corp',
-    location: 'San Francisco, CA',
-    description: 'Looking for an experienced React developer with 5+ years of experience.',
-    salary: '$120,000 - $150,000',
-    skills: ['React', 'JavaScript', 'CSS', 'HTML'],
-    applyUrl: 'https://example.com/apply/1',
-    postedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    matchScore: 47,
-    matchExplanation: 'Strong overlap in frontend skills such as React, JavaScript, CSS, and HTML.',
-  },
-  {
-    id: '2',
-    title: 'Full Stack Engineer',
-    company: 'StartupXYZ',
-    location: 'Remote',
-    description: 'Join our growing team as a full-stack engineer. Node.js and React required.',
-    salary: '$100,000 - $130,000',
-    skills: ['Node.js', 'React', 'Redis', 'APIs'],
-    applyUrl: 'https://example.com/apply/2',
-    postedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-    matchScore: 24,
-    matchExplanation: 'Good overlap in backend and frontend skills, especially Node.js and React.',
-  },
-  {
-    id: '3',
-    title: 'Backend Developer',
-    company: 'FinanceApp Inc',
-    location: 'New York, NY',
-    description: 'Seeking backend developer with experience in microservices and cloud platforms.',
-    salary: '$110,000 - $145,000',
-    skills: ['Node.js', 'Databases', 'Microservices', 'Cloud'],
-    applyUrl: 'https://example.com/apply/3',
-    postedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-    matchScore: 19,
-    matchExplanation: 'Moderate match based on backend skills, databases, and API-related experience.',
-  },
-  {
-    id: '4',
-    title: 'DevOps Engineer',
-    company: 'CloudServices Ltd',
-    location: 'Austin, TX',
-    description: 'Help us build and maintain our infrastructure on AWS and Kubernetes.',
-    salary: '$115,000 - $155,000',
-    skills: ['AWS', 'Kubernetes', 'CI/CD', 'Terraform'],
-    applyUrl: 'https://example.com/apply/4',
-    postedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-    matchScore: 12,
-    matchExplanation: 'Some overlap in cloud and infrastructure skills, especially AWS.',
-  },
-  {
-    id: '5',
-    title: 'UI/UX Designer',
-    company: 'DesignStudio',
-    location: 'Los Angeles, CA',
-    description: 'Creative designer needed for web and mobile app projects.',
-    salary: '$90,000 - $120,000',
-    skills: ['UI Design', 'UX', 'Figma', 'Prototyping'],
-    applyUrl: 'https://example.com/apply/5',
-    postedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
-    matchScore: 6,
-    matchExplanation: 'Limited overlap. Some broad product and web-related keywords match.',
-  },
-];
 
 function normalizeJob(job) {
   return {
@@ -162,7 +94,9 @@ export default function Dashboard() {
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-  if (!user) return;
+    if (!user) return;
+    loadJobs();
+  }, [user, safeFilters.role, safeFilters.location, resume?.id]);
 
   const loadJobs = async () => {
     setLoading(true);
@@ -172,49 +106,42 @@ export default function Dashboard() {
     try {
       const query = new URLSearchParams();
 
-      if (resume?.id) {
-        query.set('resumeId', resume.id);
-      }
-
-      const url = query.toString()
-        ? `${API_BASE}/api/jobs?${query.toString()}`
-        : `${API_BASE}/api/jobs`;
-
-      const response = await fetch(url);
-      const text = await response.text();
-      const data = text ? JSON.parse(text) : {};
-
-      if (!response.ok) {
-        const fallback = FALLBACK_JOBS.map(normalizeJob);
-        setJobs(fallback);
-        setError('');
-        setInfoMessage('Showing fallback jobs.');
-        return;
-      }
-
-      if (data.success && Array.isArray(data.jobs)) {
-        const normalizedJobs = data.jobs.map(normalizeJob);
-        setJobs(normalizedJobs);
-        setError('');
-        setInfoMessage(data.source === 'mock' ? 'Showing fallback jobs.' : '');
-        return;
-      }
-
-      const fallback = FALLBACK_JOBS.map(normalizeJob);
-      setJobs(fallback);
-      setError('');
-      setInfoMessage('Showing fallback jobs.');
-    } catch (err) {
-      console.error('Fetch jobs error:', err);
-      const fallback = FALLBACK_JOBS.map(normalizeJob);
-      setJobs(fallback);
-      setError('');
-      setInfoMessage('Showing fallback jobs.');
-    } finally {
-      setLoading(false);
+      if (safeFilters.role) {
+      query.set('search', safeFilters.role);
     }
-  };
 
+    if (safeFilters.location) {
+      query.set('location', safeFilters.location);
+    }
+
+    if (resume?.id) {
+      query.set('resumeId', resume.id);
+    }
+
+    const response = await fetch(`${API_BASE}/api/jobs?${query.toString()}`);
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      setJobs([]);
+      setError('Failed to load live jobs.');
+      setInfoMessage('');
+      return;
+    }
+
+    setJobs(data.jobs || []);
+    setInfoMessage('');
+  } catch (err) {
+    console.error('Fetch jobs error:', err);
+    setJobs([]);
+    setError('Could not connect to jobs API.');
+    setInfoMessage('');
+  } finally {
+    setLoading(false);
+  }
+};
+
+  useEffect(() => {
+    if (!user) return;
   loadJobs();
 
   const handleVisibilityChange = () => {
@@ -237,7 +164,7 @@ export default function Dashboard() {
   return () => {
     document.removeEventListener('visibilitychange', handleVisibilityChange);
   };
-}, [user, resume?.id]);
+}, [user, safeFilters.role, safeFilters.location,       resume?.id]);
 
   const handleLogout = () => {
     if (logout) logout();

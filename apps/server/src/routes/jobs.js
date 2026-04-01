@@ -21,6 +21,7 @@ export async function jobsRoutes(fastify) {
         results_per_page: '20',
         what: search,
         where: location,
+        contract_type: request.query.jobType || '',   // full_time / part_time
       });
 
       const url = `https://api.adzuna.com/v1/api/jobs/${COUNTRY}/search/${page}?${queryParams.toString()}`;

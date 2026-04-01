@@ -16,13 +16,15 @@ export async function jobsRoutes(fastify) {
       }
 
       const queryParams = new URLSearchParams({
-        app_id: APP_ID,
-        app_key: APP_KEY,
-        results_per_page: '20',
-        what: search,
-        where: location,
-        contract_type: request.query.jobType || '',   // full_time / part_time
-      });
+      app_id: APP_ID,
+      app_key: APP_KEY,
+      results_per_page: '20',
+      what: search,
+      where: location,
+      ...(request.query.jobType && {
+        contract_type: request.query.jobType,
+      }),
+    });
 
       const url = `https://api.adzuna.com/v1/api/jobs/${COUNTRY}/search/${page}?${queryParams.toString()}`;
 

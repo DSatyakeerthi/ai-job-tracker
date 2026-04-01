@@ -27,27 +27,20 @@ export async function jobsRoutes(fastify) {
 
       const url = `https://api.adzuna.com/v1/api/jobs/${COUNTRY}/search/${page}?${queryParams.toString()}`;
 
-      const response = await fetch(url, {
-      headers: {
-        Accept: 'application/json',
-      },
-    });
+      const response = await fetch(url);
+      const text = await response.text();
 
-    const raw = await response.text();
-
-    console.log('Adzuna status:', response.status);
-    console.log('Adzuna raw response:', raw.slice(0, 500));
-
-    let data;
-    try {
-      data = JSON.parse(raw);
-    } catch (err) {
-      return reply.send({
-        success: false,
-        message: `Adzuna API returned invalid response. Status: ${response.status}`,
-        jobs: [],
-      });
-    }
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (err) {
+        console.error("Adzuna raw response:", text);
+        return reply.send({
+          success: false,
+          message: "Adzuna returned invalid JSON",
+          jobs: [],
+        });
+      }
       if (!response.ok) {
       return reply.send({
         success: false,
@@ -56,19 +49,10 @@ export async function jobsRoutes(fastify) {
       });
     }
 
-      const jobs = (data.results || []).map((job) => ({
-        id: job.id,
-        title: job.title,
-        company: job.company?.display_name || 'Unknown',
-        location: job.location?.display_name || 'Unknown',
-        description: job.description,
-        applyUrl: job.redirect_url,
-        postedAt: job.created,
-      }));
+      const jobs = data.results || [];
 
       return reply.send({
         success: true,
-        source: 'live',
         jobs,
       });
     } catch (err) {

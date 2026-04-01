@@ -28,15 +28,29 @@ export async function jobsRoutes(fastify) {
       const url = `https://api.adzuna.com/v1/api/jobs/${COUNTRY}/search/${page}?${queryParams.toString()}`;
 
       const response = await fetch(url);
-      const data = await response.json();
+      const raw = await response.text();
 
+      let data;
+      try {
+        data = JSON.parse(raw);
+      } catch (err) {
+        console.error("Adzuna returned non-JSON:", raw);
+
+        return reply.send({
+          success: false,
+          message: "Adzuna API returned invalid response",
+          jobs: [],
+        });
+      }
       if (!response.ok) {
-      return reply.code(response.status).send({
-      success: false,
-      message: data?.description || data?.message || 'Failed to fetch jobs',
-      jobs: [],
-    });
-  }
+      console.error("Adzuna error:", data);
+
+      return reply.send({
+        success: false,
+        message: data?.description || data?.message || "Adzuna request failed",
+        jobs: [],
+      });
+    }
 
       const jobs = (data.results || []).map((job) => ({
         id: job.id,

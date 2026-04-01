@@ -119,9 +119,19 @@ export default function Dashboard() {
     }
 
     const response = await fetch(`${API_BASE}/api/jobs?${query.toString()}`);
-    const data = await response.json();
+const raw = await response.text();
 
-    if (!response.ok || !data.success) {
+let data;
+try {
+  data = JSON.parse(raw);
+} catch {
+  setJobs([]);
+  setError(raw || 'Server returned invalid response');
+  setInfoMessage('');
+  return;
+}
+
+if (!response.ok || !data.success) {
   setJobs([]);
   setError(data.message || 'Failed to load live jobs.');
   setInfoMessage('');
@@ -129,7 +139,7 @@ export default function Dashboard() {
 }
 
 setJobs(data.jobs || []);
-
+setInfoMessage(data.source === 'mock' ? 'Showing fallback jobs.' : '');
   if (data.source === 'mock') {
   setInfoMessage('Showing fallback jobs. Live jobs are not available right now.');
   } else {

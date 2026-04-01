@@ -1,4 +1,3 @@
-// test change
 export async function jobsRoutes(fastify) {
   fastify.get('/jobs', async (request, reply) => {
     try {
@@ -22,34 +21,47 @@ export async function jobsRoutes(fastify) {
         results_per_page: '20',
         what: search,
         where: location,
-        content_type: 'application/json',
       });
 
       const url = `https://api.adzuna.com/v1/api/jobs/${COUNTRY}/search/${page}?${queryParams.toString()}`;
 
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        headers: {
+          Accept: 'application/json',
+        },
+      });
+
       const text = await response.text();
 
       let data;
       try {
         data = JSON.parse(text);
       } catch (err) {
-        console.error("Adzuna raw response:", text);
+        console.error('Adzuna raw response:', text);
         return reply.send({
           success: false,
-          message: "Adzuna returned invalid JSON",
+          message: `Adzuna returned invalid JSON. Status: ${response.status}`,
           jobs: [],
         });
       }
-      if (!response.ok) {
-      return reply.send({
-        success: false,
-        message: data?.description || data?.message || "Adzuna request failed",
-        jobs: [],
-      });
-    }
 
-      const jobs = data.results || [];
+      if (!response.ok) {
+        return reply.send({
+          success: false,
+          message: data?.description || data?.message || 'Adzuna request failed',
+          jobs: [],
+        });
+      }
+
+      const jobs = (data.results || []).map((job) => ({
+        id: job.id,
+        title: job.title,
+        company: job.company?.display_name || 'Unknown',
+        location: job.location?.display_name || 'Unknown',
+        description: job.description,
+        applyUrl: job.redirect_url,
+        postedAt: job.created,
+      }));
 
       return reply.send({
         success: true,

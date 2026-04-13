@@ -8,7 +8,7 @@ A full-stack AI application that parses resumes, fetches real-time jobs, and ran
 👉 https://zippy-quokka-0cd1c3.netlify.app/
 
 ## 📂 GitHub Repository
-👉 [Repo Link]
+👉 https://github.com/DSatyakeerthi/ai-job-tracker
 
 ---
 

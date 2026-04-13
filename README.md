@@ -75,13 +75,10 @@ Resume → Parsing → Embedding → Job Fetch → Matching → Ranking → UI D
 ## 📸 Screenshots
 
 ### Home / Job Listings
-![Home](link)
+![Home](docs/home.png)
 
 ### Filtering (24 hours / 1 week)
-![Filters](link)
-
-### Top Matches
-![Top Matches](link)
+![Filters](docs/filters.png)
 
 ---
 

@@ -1,84 +1,118 @@
-# AI-Powered Job Tracker
+# AI-Powered Job Tracker with Smart Matching
 
-## Architecture Diagram
-
-```
-flowchart TD
-    A[Frontend (React)] -->|REST API| B[Backend (Node.js + Fastify)]
-    B -->|Fetch Jobs| C[External Job API (Adzuna)]
-    B -->|Resume Upload| D[Storage (JSON/In-Memory)]
-    B -->|Job Matching| E[LangChain (AI Matching)]
-    B -->|AI Assistant| F[LangGraph (AI Orchestration)]
-    F -->|LLM| G[OpenAI/Anthropic/Gemini]
-    B -->|Applications| D
-    A -->|Web UI| H[User]
-```
-
-## Setup Instructions
-
-### Prerequisites
-- Node.js (v18+ recommended)
-- npm
-
-### Environment Variables
-- Copy `.env.example` to `.env` in both `/apps/server` and `/apps/web` as needed.
-- Fill in your Adzuna and OpenAI API keys.
-
-### Local Setup
-```sh
-cd apps/server
-npm install
-npm run dev
-
-cd ../web
-npm install
-npm run dev
-```
-
-### Deployment
-- Deploy backend and frontend to your preferred platform (e.g., Vercel, Netlify, Render, Railway).
-- Ensure environment variables are set in your deployment environment.
-
-## LangChain & LangGraph Usage
-- **LangChain**: Used for AI-powered job-resume semantic matching. Each job is scored against the user's resume using an LLM, with explanations and match scores.
-- **LangGraph**: Orchestrates the AI assistant, handling intent detection, action routing (search, filter update, help), conversation state, and tool/function calling for UI filter updates.
-- **Prompt Design**: Prompts are crafted for both job matching and assistant intent detection, filter extraction, and help responses.
-- **State Management**: Conversation and filter state are managed in the backend and synchronized with the frontend.
-
-## AI Matching Logic
-- Combines rule-based and LLM-based scoring for each job-resume pair.
-- LLM refines the score and provides a short explanation (skills, experience, keywords).
-- Performance: Caches match results and truncates resume text for efficiency.
-
-## Popup Flow Design (Critical Thinking)
-- After applying, a popup asks if the user applied, just browsed, or applied earlier.
-- Handles edge cases (e.g., user closes tab, applies later).
-- Alternative: Could use browser events or email tracking, but popup is privacy-friendly and simple.
-
-## AI Assistant UI Choice
-- Floating chat bubble (bottom-right) for minimal disruption and easy access.
-- Sidebar was considered but bubble is more mobile-friendly and less intrusive.
-
-## Scalability
-- Handles 100+ jobs efficiently with caching and pagination.
-- JSON/in-memory storage is simple for demo; for 10,000+ users, migrate to a database.
-- Stateless backend and REST API make scaling easy.
-
-## Tradeoffs
-- In-memory/JSON storage is not production-grade for large scale.
-- LLM calls can be slow/costly at scale; batching and caching help.
-- UI is responsive but could be further optimized for mobile.
-- With more time: Add database, advanced analytics, notifications, and more job sources.
+A full-stack AI application that parses resumes, fetches real-time jobs, and ranks them using AI-based matching. The system includes filtering, top matches, and an AI assistant to control job preferences.
 
 ---
 
-**Submission Checklist:**
-- [x] Live link works on desktop & mobile
-- [x] Public GitHub repo
-- [x] README includes architecture diagram
-- [x] LangChain implemented
-- [x] LangGraph implemented
-- [x] AI controls filters
-- [x] Match scores visible
-- [x] Application tracking works
-- [x] No secrets in code
+## 🚀 Live Demo
+👉 https://zippy-quokka-0cd1c3.netlify.app/
+
+## 📂 GitHub Repository
+👉 [Repo Link]
+
+---
+
+## 🔥 Key Features
+
+- Resume parsing using LLM APIs
+- AI-based job matching using embeddings and scoring
+- Top Matches system to rank relevant jobs
+- Job filtering (Last 24 hours / 1 week)
+- AI assistant to update filters and preferences
+- Real-time job data integration via external APIs
+- Application tracking (Applied / Not Applied)
+
+---
+
+## 🧠 How AI is Used
+
+- Resume is uploaded and processed using LLM APIs  
+- Extracted data is structured into skills and experience  
+- Jobs are fetched from external APIs  
+- Matching is performed using:
+  - Embeddings similarity  
+  - Rule-based scoring  
+  - LLM-assisted evaluation  
+- Top matches are ranked and displayed to the user  
+
+---
+
+## 🏗️ System Architecture
+
+👉 [Architecture Diagram Link]
+
+**Flow:**
+Resume → Parsing → Embedding → Job Fetch → Matching → Ranking → UI Display
+
+---
+
+## 🛠️ Tech Stack
+
+**Frontend:**
+- React
+- JavaScript
+- HTML/CSS
+
+**Backend:**
+- Fastify (Node.js)
+- REST APIs
+
+**AI / ML:**
+- OpenAI API
+- RAG (Retrieval-Augmented Generation)
+- Embeddings
+
+**Data & Processing:**
+- JSON storage / In-memory processing
+- Job API integration (Adzuna)
+
+**Tools:**
+- Windsurf (AI-assisted development)
+- GitHub
+
+---
+
+## 📸 Screenshots
+
+### Home / Job Listings
+![Home](link)
+
+### Filtering (24 hours / 1 week)
+![Filters](link)
+
+### Top Matches
+![Top Matches](link)
+
+---
+
+## ⚡ Project Highlights
+
+- Built a working AI system combining LLMs, APIs, and backend pipelines  
+- Handles job matching across multiple listings using scoring logic  
+- Uses caching and structured processing to improve performance  
+- Designed modular architecture for scalability  
+
+---
+
+## 🚧 Future Improvements
+
+- Add database (PostgreSQL / MongoDB)
+- Improve UI/UX for better user experience
+- Enhance matching accuracy with advanced ranking models
+- Deploy at scale with cloud infrastructure (AWS / Render)
+
+---
+
+## 💡 Key Learnings
+
+- Designing AI systems beyond simple API calls  
+- Handling large data using chunking and pipelines  
+- Improving AI output reliability using validation logic  
+- Building end-to-end applications combining AI + backend + UI  
+
+---
+
+## 📬 Contact
+
+LinkedIn: [Your LinkedIn Link]
+Email: [Your Email]

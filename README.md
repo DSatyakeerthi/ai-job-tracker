@@ -39,7 +39,7 @@ A full-stack AI application that parses resumes, fetches real-time jobs, and ran
 
 ## 🏗️ System Architecture
 
-👉 [Architecture Diagram Link]
+👉 ![Architecture](docs/architecture.png)
 
 **Flow:**
 Resume → Parsing → Embedding → Job Fetch → Matching → Ranking → UI Display

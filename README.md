@@ -111,5 +111,5 @@ Resume → Parsing → Embedding → Job Fetch → Matching → Ranking → UI D
 
 ## 📬 Contact
 
-LinkedIn: [Your LinkedIn Link]
-Email: [Your Email]
+LinkedIn: [https://www.linkedin.com/in/satyakeerthidara2/]
+Email: [satyakeerthidara7@gmail.com]

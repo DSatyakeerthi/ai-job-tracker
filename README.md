@@ -23,7 +23,16 @@ A full-stack AI application that parses resumes, fetches real-time jobs, and ran
 - Authentication and user workflows
 
 ---
+## My Contribution
 
+- Built backend APIs using Fastify
+- Integrated OpenAI APIs and embeddings
+- Developed semantic matching workflows
+- Implemented resume parsing pipelines
+- Designed filtering and recommendation logic
+- Improved debugging and workflow automation
+
+---
 ## 🧠 How AI is Used
 
 - Resume is uploaded and processed using LLM APIs  

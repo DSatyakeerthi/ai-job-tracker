@@ -3,6 +3,11 @@
 A full-stack AI application that parses resumes, fetches real-time jobs, and ranks them using AI-based matching. The system includes filtering, top matches, and an AI assistant to control job preferences.
 
 ---
+## Why This Project Matters
+
+Job searching is time-consuming and often involves manually filtering hundreds of listings. This project uses AI-powered semantic matching and workflow automation to help candidates discover relevant opportunities faster and more accurately.
+
+---
 
 ## 🚀 Live Demo
 👉 https://zippy-quokka-0cd1c3.netlify.app/

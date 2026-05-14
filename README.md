@@ -64,6 +64,25 @@ Resume → Parsing → Embedding → Job Fetch → Matching → Ranking → UI D
 
 ---
 
+## Backend APIs
+
+- Resume Upload API
+- Job Fetch API
+- Semantic Matching API
+- Recommendation API
+- Authentication API
+
+---
+
+## Project Structure
+
+frontend/        → React frontend  
+backend/         → Fastify backend APIs  
+docs/            → Screenshots & architecture  
+data/            → Resume and job data  
+
+---
+
 ## 📸 Screenshots
 
 ### Home / Job Listings
@@ -87,6 +106,15 @@ Resume → Parsing → Embedding → Job Fetch → Matching → Ranking → UI D
 
 ---
 
+## Challenges Faced
+
+- Handling inconsistent resume formats
+- Improving semantic matching accuracy
+- Managing API response latency
+- Designing scalable workflow pipelines
+- Balancing rule-based and embedding-based scoring
+
+---
 ## 💡 Key Learnings
 
 - Designing AI systems beyond simple API calls  
@@ -105,7 +133,7 @@ Resume → Parsing → Embedding → Job Fetch → Matching → Ranking → UI D
 
 ---
 
-## My Contribution
+## My Contributions
 
 - Built backend APIs using Fastify
 - Integrated OpenAI APIs and embeddings
@@ -113,6 +141,15 @@ Resume → Parsing → Embedding → Job Fetch → Matching → Ranking → UI D
 - Implemented resume parsing pipelines
 - Designed filtering and recommendation logic
 - Improved debugging and workflow automation
+
+---
+
+## Deployment Architecture
+
+Frontend: Netlify  
+Backend APIs: Render  
+AI Services: OpenAI API  
+External Data: Adzuna API
 
 ---
 

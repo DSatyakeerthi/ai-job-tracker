@@ -14,13 +14,13 @@ A full-stack AI application that parses resumes, fetches real-time jobs, and ran
 
 ## 🔥 Key Features
 
-- Resume parsing using LLM APIs
-- AI-based job matching using embeddings and scoring
-- Top Matches system to rank relevant jobs
-- Job filtering (Last 24 hours / 1 week)
-- AI assistant to update filters and preferences
-- Real-time job data integration via external APIs
-- Application tracking (Applied / Not Applied)
+- AI-powered semantic job matching
+- Resume parsing using LLMs
+- Embedding-based similarity scoring
+- Fastify backend APIs
+- Real-time job filtering
+- Vector search workflows
+- Authentication and user workflows
 
 ---
 

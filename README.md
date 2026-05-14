@@ -23,28 +23,6 @@ A full-stack AI application that parses resumes, fetches real-time jobs, and ran
 - Authentication and user workflows
 
 ---
-## My Contribution
-
-- Built backend APIs using Fastify
-- Integrated OpenAI APIs and embeddings
-- Developed semantic matching workflows
-- Implemented resume parsing pipelines
-- Designed filtering and recommendation logic
-- Improved debugging and workflow automation
-
----
-## 🧠 How AI is Used
-
-- Resume is uploaded and processed using LLM APIs  
-- Extracted data is structured into skills and experience  
-- Jobs are fetched from external APIs  
-- Matching is performed using:
-  - Embeddings similarity  
-  - Rule-based scoring  
-  - LLM-assisted evaluation  
-- Top matches are ranked and displayed to the user  
-
----
 
 ## 🏗️ System Architecture
 
@@ -91,12 +69,25 @@ Resume → Parsing → Embedding → Job Fetch → Matching → Ranking → UI D
 
 ---
 
-## ⚡ Project Highlights
+## 🧠 How AI is Used
 
-- Built a working AI system combining LLMs, APIs, and backend pipelines  
-- Handles job matching across multiple listings using scoring logic  
-- Uses caching and structured processing to improve performance  
-- Designed modular architecture for scalability  
+- Resume is uploaded and processed using LLM APIs  
+- Extracted data is structured into skills and experience  
+- Jobs are fetched from external APIs  
+- Matching is performed using:
+  - Embeddings similarity  
+  - Rule-based scoring  
+  - LLM-assisted evaluation  
+- Top matches are ranked and displayed to the user  
+
+---
+
+## 💡 Key Learnings
+
+- Designing AI systems beyond simple API calls  
+- Handling large data using chunking and pipelines  
+- Improving AI output reliability using validation logic  
+- Building end-to-end applications combining AI + backend + UI  
 
 ---
 
@@ -109,12 +100,23 @@ Resume → Parsing → Embedding → Job Fetch → Matching → Ranking → UI D
 
 ---
 
-## 💡 Key Learnings
+## My Contribution
 
-- Designing AI systems beyond simple API calls  
-- Handling large data using chunking and pipelines  
-- Improving AI output reliability using validation logic  
-- Building end-to-end applications combining AI + backend + UI  
+- Built backend APIs using Fastify
+- Integrated OpenAI APIs and embeddings
+- Developed semantic matching workflows
+- Implemented resume parsing pipelines
+- Designed filtering and recommendation logic
+- Improved debugging and workflow automation
+
+---
+
+## ⚡ Project Highlights
+
+- Built a working AI system combining LLMs, APIs, and backend pipelines  
+- Handles job matching across multiple listings using scoring logic  
+- Uses caching and structured processing to improve performance  
+- Designed modular architecture for scalability  
 
 ---
 

@@ -157,8 +157,11 @@ setInfoMessage(data.source === 'mock' ? 'Showing fallback jobs.' : '');
 };
 
   useEffect(() => {
-    if (!user) return;
-  loadJobs();
+  if (!user) return;
+
+  const timer = setTimeout(() => {
+    loadJobs();
+  }, 700);
 
   const handleVisibilityChange = () => {
     if (!document.hidden) {
@@ -178,9 +181,10 @@ setInfoMessage(data.source === 'mock' ? 'Showing fallback jobs.' : '');
   document.addEventListener('visibilitychange', handleVisibilityChange);
 
   return () => {
+    clearTimeout(timer);
     document.removeEventListener('visibilitychange', handleVisibilityChange);
   };
-}, [user, safeFilters.role, safeFilters.location,       resume?.id]);
+}, [user, safeFilters.role, safeFilters.location, resume?.id]);
 
   const handleLogout = () => {
     if (logout) logout();
